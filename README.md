@@ -93,6 +93,26 @@ The `nested_fields_for` method lists the phones this person has and also adds an
 
 If you're paying attention, you noticed the key elements are marked with special class names. We *need* this for the javascript code, so it knows what to do with each HTML element: the one that have the children must have the class `items`; each child must be marked with the class `item`; inside an item, the link for removal must have the class `remove`; and the link to add new items must have the class `add`. We can change the names later, but these are the default choices. Finally, don't forget to add the `id` field, as it is needed by AR to identify whether this is an existing or a new element, and the `_destroy` field  to activate deletion when the user clicks on the remove link.
 
+### JSONB collections
+To use this with a JSONB collection instead of an association, use the `new_object` and `collection` options.
+
+Use collection to pass in the array, new_object to pass in what an empty object looks like.
+
+```erb
+	<%= f.nested_fields_for :phones, collection: f.object[:phones],
+							new_object: [OpenStruct.new({number: ''})] do |f| %>
+      <fieldset class="item">
+        <%= f.label :number %>
+        <%= f.text_field :number %>
+
+        <a href="#" class="remove">remove</a>
+
+        <%= f.hidden_field :id %>
+        <%= f.hidden_field :_destroy %>
+      </fieldset>
+    <% end %>
+```
+
 ### Javascript
 
 This is the easiest part: just activate the nested fields actions when the page loads. We can put this in the `application.js` file (or in any other place that gets executed in the page):

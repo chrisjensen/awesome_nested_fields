@@ -4,6 +4,8 @@ ActionView::Helpers::FormBuilder.class_eval do
     raise ArgumentError, 'Missing block to nested_fields_for' unless block_given?
     
     options[:new_item_index] ||= 'new_nested_item'
+    
+    options[:collection] = options[:collection].map{ |o| OpenStruct.new(o) } if options[:collection]
     options[:new_object] ||= self.object.class.reflect_on_association(association).klass.new
     options[:item_template_class] ||= ['template', 'item', association.to_s.singularize].join(' ')
     options[:empty_template_class] ||= ['template', 'empty', association.to_s.singularize].join(' ')
@@ -11,9 +13,13 @@ ActionView::Helpers::FormBuilder.class_eval do
     options[:render_template] = options.key?(:render_template) ? options[:render_template] : true
     options[:escape_template] = options.key?(:escape_template) ? options[:escape_template] : true
     
-    output = @template.capture { fields_for(association, &block) }
+    if options.key? :collection
+		output = @template.capture { fields_for(association, options[:collection], &block) }
+	else
+		output = @template.capture { fields_for(association, &block) }
+	end
     output ||= template.raw ""
-    
+
     if options[:show_empty] and self.object.send(association).empty?
       output.safe_concat @template.capture { yield nil } 
     end
